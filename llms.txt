@@ -1,0 +1,83 @@
+# tiny-rfc9457
+
+> RFC 9457 Problem Details renderer and parser for Python. Stdlib only. MIT.
+
+## What it does
+
+Implements RFC 9457 (July 2023, "Problem Details for HTTP APIs"). Defines
+a single JSON shape for HTTP error bodies so clients can parse error
+responses uniformly.
+
+Problem shape:
+```json
+{
+  "type": "urn:problem:validation-failed",
+  "title": "Validation failed",
+  "status": 422,
+  "detail": "3 fields invalid",
+  "instance": "/users",
+  "errors": [{"pointer": "/email", "detail": "invalid format"}]
+}
+```
+
+Content-Type: `application/problem+json`.
+
+## When to use
+
+Use this when:
+- You're building an HTTP API and want a single, standard error shape.
+- You want clients to handle errors programmatically (`type` URI drives
+  retry behavior, etc.) instead of parsing prose.
+- You're adopting RFC 9457 (or its predecessor RFC 7807) and want a
+  small, dependency-free renderer.
+
+If your API is RPC-style (gRPC, GraphQL) the equivalent is a different
+spec (gRPC error model, GraphQL error format).
+
+## Install
+
+```bash
+pip install tiny-rfc9457
+```
+
+## Public API
+
+```python
+from tiny_rfc9457 import Problem, ProblemType, problem_response
+
+p = Problem(
+    type=ProblemType.RATE_LIMIT_EXCEEDED,
+    title="Too Many Requests",
+    status=429,
+    detail="retry in 23s",
+    instance="/requests/abc",
+)
+response = problem_response(p)
+# {"status": 429, "headers": {"Content-Type": "application/problem+json"}, "body": "..."}
+```
+
+Full API:
+- `Problem(type, title, status, detail, instance, errors, extensions)`
+- `SubProblem(type, detail, pointer, name)` for nested errors
+- `ProblemType` constants: ABOUT_BLANK, RATE_LIMIT_EXCEEDED, VALIDATION_FAILED, NOT_FOUND, UNAUTHORIZED, FORBIDDEN, CONFLICT, INTERNAL, TIMEOUT, DEPENDENCY_FAILURE
+- `problem_response(problem, *, request=None, body_bytes=False) -> dict`
+- `parse(payload) -> Problem`
+- `from_exception(exc, *, instance=None) -> Problem`
+- `registry.register(ExceptionType)` decorator
+- `__version__ = "0.1.0"`
+
+## Constants
+
+- `CONTENT_TYPE = "application/problem+json"`
+- 21 unit tests in `test_tiny_rfc9457.py`
+
+## Composition
+
+- After `tiny-router` exception handlers.
+- After `tiny-rate-window` denials (wrap the 429 as a problem with
+  `Retry-After`).
+- After `tiny-rfc9457` validation failures from `tiny-validator`.
+
+## License
+
+MIT. Author: Hussain AlSaibai <hussain.alsaibai@gmail.com>.
