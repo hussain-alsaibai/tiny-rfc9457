@@ -5,7 +5,8 @@
 Stdlib only. MIT licensed. ~340 LOC. 21 tests.
 
 ```bash
-pip install tiny-rfc9457
+# From GitHub (recommended -- not yet on PyPI)
+pip install git+https://github.com/hussain-alsaibai/tiny-rfc9457.git
 ```
 
 ---
