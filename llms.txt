@@ -36,8 +36,10 @@ spec (gRPC error model, GraphQL error format).
 
 ## Install
 
+NOTE: unpublished on PyPI -- the bare name is not on the index, so the `pip install <name>` form 404s. The URL below is the install.
+
 ```bash
-pip install tiny-rfc9457
+pip install "tiny-rfc9457 @ git+https://github.com/hussain-alsaibai/tiny-rfc9457.git"
 ```
 
 ## Public API
